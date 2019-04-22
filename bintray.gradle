@@ -32,7 +32,7 @@ ext {
     // Your github repo link
     siteUrl = mSiteUrl
     gitUrl = mGitUrl
-    githubRepository = 'titanium-codes/AnonymousActivity'
+    githubRepository = 'blainepwnz/AnonymousActivity'
 
     libraryVersion = versions.publishVersion
 
