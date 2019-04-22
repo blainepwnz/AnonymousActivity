@@ -1,0 +1,53 @@
+apply plugin: 'com.jfrog.bintray'
+apply from: '../deps.gradle'
+
+def mSiteUrl = 'https://github.com/blainepwnz'
+def mGitUrl = 'https://github.com/blainepwnz/AnonymousActivity.git'
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+}
+tasks.whenTaskAdded { task ->
+    if (task.name == 'javadoc') {
+        task.configure {
+            failOnError false
+        }
+    }
+}
+android {
+    compileSdkVersion versions.compileSdkVersion
+}
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = versions.artifact
+
+    publishedGroupId = 'com.tomash'
+    libraryName = versions.artifact
+    artifact = versions.artifact
+
+    libraryDescription = 'Extension function for attaching activity to any context'
+
+    // Your github repo link
+    siteUrl = mSiteUrl
+    gitUrl = mGitUrl
+    githubRepository = 'titanium-codes/AnonymousActivity'
+
+    libraryVersion = versions.publishVersion
+
+    developerId = 'blainepwnz'
+    developerName = 'Andrew Tomash'
+    developerEmail = 'kpubedko@gmail.com'
+    licenseName = 'MIT'
+    licenseUrl = 'https://opensource.org/licenses/MIT'
+    allLicenses = ["MIT"]
+}
+bintray {
+    pkg {
+        userOrg = "blainepwnz"
+    }
+}
+apply from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/bintrayv1.gradle'
+

@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="codes.titanium.anonymousactivity">
+
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+
+    <application>
+        <activity
+            android:name="codes.titanium.anonymousactivity.anonymous.AnonymousActivity"
+            android:theme="@style/Invisible" />
+    </application>
+
+</manifest>
