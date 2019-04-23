@@ -65,6 +65,23 @@ class PermissionsTests {
     }
 
     @Test
+    fun showingDialogWithCustomRationaleIfDefinedAndDenyingPermissionsAfterRequest() {
+        askPermissionWithDeny()
+        wrapWithLatchAndCheckActivityDestroy { uiDevice ->
+            askPermission {
+                onDeny { countDown() }
+                permissionRationale {
+                    it.dialogWithOneButton {
+                        requestPermission()
+                        uiDevice.clickOnDeny()
+                    }
+                }
+            }
+            uiDevice.clickOnDialogButton()
+        }
+    }
+
+    @Test
     fun cancelDialogWithCustomRationaleIfDefinedDeniesWithReason() {
         askPermissionWithDeny()
         wrapWithLatchAndCheckActivityDestroy { uiDevice ->

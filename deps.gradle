@@ -3,8 +3,8 @@ ext.versions = [
         compileSdkVersion: 28,
         minSdk           : 18,
         buildToolsVersion: '28.0.3',
-        publishVersion   : '1.0.0',
-        buildCode        : 1,
+        publishVersion   : '1.0.1',
+        buildCode        : 2,
         kotlinVersion    : '1.3.30',
         //libs
         kotlinStd        : 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.30',

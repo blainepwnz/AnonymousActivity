@@ -24,6 +24,7 @@ class PermissionsActivityContext(private val permission: String) {
     private var neverAskAgainRationale: (Activity) -> AlertDialog? = { null }
     private var permissionRationale: (Activity) -> AlertDialog? = { null }
     private var didShownNeverAskAgainRationale = false
+    private var didShownPermissionsRationale = false
     private var currentDialog: AlertDialog? = null
     /**
      * Cached functions
@@ -99,6 +100,7 @@ class PermissionsActivityContext(private val permission: String) {
         onActivityContextAvailable(anonymousActivity)
         if (anonymousActivity.shouldShowRationale()) {
             permissionRationale(anonymousActivity)?.apply {
+                setOnShowListener { didShownPermissionsRationale = true }
                 showAndAssignDialog(CancelPermissionRationale)
                 return
             }
@@ -111,8 +113,14 @@ class PermissionsActivityContext(private val permission: String) {
             onAllow()
         } else {
             if (anonymousActivity.shouldShowRationale()) {
-                permissionRationale(anonymousActivity)?.showAndAssignDialog(CancelPermissionRationale)
-                    ?: deny(MissingPermissionRationale)
+                if (!didShownPermissionsRationale) {
+                    permissionRationale(anonymousActivity)?.apply {
+                        setOnShowListener { didShownPermissionsRationale = true }
+                        showAndAssignDialog(CancelPermissionRationale)
+                    } ?: deny(MissingPermissionRationale)
+                } else {
+                    deny(DenyPermissionRationale)
+                }
             } else {
                 neverAskAgainRationale(anonymousActivity)?.apply {
                     setOnShowListener { didShownNeverAskAgainRationale = true }
@@ -120,6 +128,10 @@ class PermissionsActivityContext(private val permission: String) {
                 } ?: deny(MissingNeverAskAgainRationale)
             }
         }
+    }
+
+    private fun showPermissionRationale(anonymousActivity: AnonymousActivity) {
+
     }
 
     internal fun launch(ctx: Context) {
