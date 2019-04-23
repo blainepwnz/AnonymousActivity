@@ -101,7 +101,7 @@ class PermissionsActivityContext(private val permission: String) {
         if (anonymousActivity.shouldShowRationale()) {
             permissionRationale(anonymousActivity)?.apply {
                 setOnShowListener { didShownPermissionsRationale = true }
-                showAndAssignDialog(CancelPermissionRationale)
+                showAndAssignDialog(anonymousActivity, CancelPermissionRationale)
                 return
             }
         }
@@ -116,7 +116,7 @@ class PermissionsActivityContext(private val permission: String) {
                 if (!didShownPermissionsRationale) {
                     permissionRationale(anonymousActivity)?.apply {
                         setOnShowListener { didShownPermissionsRationale = true }
-                        showAndAssignDialog(CancelPermissionRationale)
+                        showAndAssignDialog(anonymousActivity, CancelPermissionRationale)
                     } ?: deny(MissingPermissionRationale)
                 } else {
                     deny(DenyPermissionRationale)
@@ -124,14 +124,10 @@ class PermissionsActivityContext(private val permission: String) {
             } else {
                 neverAskAgainRationale(anonymousActivity)?.apply {
                     setOnShowListener { didShownNeverAskAgainRationale = true }
-                    showAndAssignDialog(CancelNeverAskAgainRationale)
+                    showAndAssignDialog(anonymousActivity, CancelNeverAskAgainRationale)
                 } ?: deny(MissingNeverAskAgainRationale)
             }
         }
-    }
-
-    private fun showPermissionRationale(anonymousActivity: AnonymousActivity) {
-
     }
 
     internal fun launch(ctx: Context) {
@@ -142,20 +138,22 @@ class PermissionsActivityContext(private val permission: String) {
                 onCreate { this@PermissionsActivityContext.onCreate(this) }
                 onResume { this@PermissionsActivityContext.onResume(this) }
                 onRequestPermissionResult { _, _, results ->
-                    this@PermissionsActivityContext.onRequestPermissionResult(
-                        this,
-                        results
-                    )
+                    this@PermissionsActivityContext.onRequestPermissionResult(this, results)
                 }
+                onDestroy { currentDialog?.dismiss() }
             }.launch(ctx)
         }
     }
 
-    private fun AlertDialog.showAndAssignDialog(cancelReason: DenyReason) {
+    private fun AlertDialog.showAndAssignDialog(activity: Activity, cancelReason: DenyReason) {
         currentDialog?.dismiss()
-        show()
-        setOnCancelListener { deny(cancelReason) }
-        currentDialog = this
+        if (!activity.isFinishing || !activity.isDestroyed) {
+            show()
+            setOnCancelListener { deny(cancelReason) }
+            currentDialog = this
+        } else {
+            deny(cancelReason)
+        }
     }
 
 }

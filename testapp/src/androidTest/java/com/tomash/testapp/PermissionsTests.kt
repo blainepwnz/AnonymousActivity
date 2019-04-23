@@ -29,6 +29,20 @@ class PermissionsTests {
     }
 
     @Test
+    fun multipleLaunchesAtSameMomentNotCrashingByWindowLeak() {
+        askPermissionWithDeny()
+        wrapWithLatch {
+            repeat(10) {
+                askPermission {
+                    onDeny { countDown() }
+                    permissionRationale { it.dialogWithOneButton {} }
+                }
+            }
+            it.clickSomewhereOutsideDialog()
+        }
+    }
+
+    @Test
     fun ifPermissionsAreAllowedNotLaunchesActivity() {
         allowPermissionsOnFirstTimeAllowingPermissions()
         wrapWithLatch { askPermission { onAllow { countDown() } } }
