@@ -9,9 +9,13 @@ import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import codes.titanium.anonymousactivity.AnonymousActivityLogger
 import codes.titanium.anonymousactivity.anonymous.ActivityContext
 import codes.titanium.anonymousactivity.anonymous.AnonymousActivity
 import codes.titanium.anonymousactivity.anonymous.finishSilently
+import codes.titanium.anonymousactivity.log
+import codes.titanium.anonymousactivity.logFunc
+import codes.titanium.anonymousactivity.plus
 
 fun Context.launchActivityForPermissions(permission: String, init: PermissionsActivityContext.() -> Unit) =
     PermissionsActivityContext(permission).apply(init).launch(this)
@@ -38,17 +42,18 @@ class PermissionsActivityContext(private val permission: String) {
     fun openSettings() = openSettingsFunc()
 
     fun deny(reason: DenyReason, shouldFinish: Boolean = true) {
+        AnonymousActivityLogger.log("Denied permission with ${reason.javaClass.simpleName}")
         onDeny(reason)
         if (shouldFinish)
             finishActivityFunc()
     }
 
     fun neverAskAgainRationale(init: (Activity) -> AlertDialog?) {
-        neverAskAgainRationale = init
+        neverAskAgainRationale = logFunc("try to show never ask again rationale") + init
     }
 
     fun permissionRationale(init: (Activity) -> AlertDialog?) {
-        permissionRationale = init
+        permissionRationale = logFunc("try to show permission rationale") + init
     }
 
     fun onAllow(init: () -> Unit) {
@@ -77,6 +82,7 @@ class PermissionsActivityContext(private val permission: String) {
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
     private fun Activity.openSettingsForApp() {
+        log("opening settings")
         val intent = Intent()
         intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
         val uri = Uri.fromParts("package", packageName, null)
@@ -94,11 +100,15 @@ class PermissionsActivityContext(private val permission: String) {
     }
 
     private fun onCreate(anonymousActivity: AnonymousActivity) {
-        requestPermissionFunc = { ActivityCompat.requestPermissions(anonymousActivity, arrayOf(permission), 0) }
+        requestPermissionFunc = {
+            anonymousActivity.log("requesting permissions")
+            ActivityCompat.requestPermissions(anonymousActivity, arrayOf(permission), 0)
+        }
         openSettingsFunc = { anonymousActivity.openSettingsForApp() }
         finishActivityFunc = { anonymousActivity.finishSilently() }
         onActivityContextAvailable(anonymousActivity)
         if (anonymousActivity.shouldShowRationale()) {
+            anonymousActivity.log("should show permission rationale, trying to show rationale")
             permissionRationale(anonymousActivity)?.apply {
                 setOnShowListener { didShownPermissionsRationale = true }
                 showAndAssignDialog(anonymousActivity, CancelPermissionRationale)
@@ -110,9 +120,12 @@ class PermissionsActivityContext(private val permission: String) {
 
     private fun onRequestPermissionResult(anonymousActivity: AnonymousActivity, grantResults: IntArray) {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            anonymousActivity.log("permissions granted")
             onAllow()
         } else {
+            anonymousActivity.log("permissions are not granted")
             if (anonymousActivity.shouldShowRationale()) {
+                anonymousActivity.log("should show permission rationale")
                 if (!didShownPermissionsRationale) {
                     permissionRationale(anonymousActivity)?.apply {
                         setOnShowListener { didShownPermissionsRationale = true }
@@ -122,6 +135,7 @@ class PermissionsActivityContext(private val permission: String) {
                     deny(DenyPermissionRationale)
                 }
             } else {
+                anonymousActivity.log("should show never ask again rationale rationale")
                 neverAskAgainRationale(anonymousActivity)?.apply {
                     setOnShowListener { didShownNeverAskAgainRationale = true }
                     showAndAssignDialog(anonymousActivity, CancelNeverAskAgainRationale)
@@ -148,10 +162,12 @@ class PermissionsActivityContext(private val permission: String) {
     private fun AlertDialog.showAndAssignDialog(activity: Activity, cancelReason: DenyReason) {
         currentDialog?.dismiss()
         if (!activity.isFinishing || !activity.isDestroyed) {
+            activity.log("activity is ready to show dialog, showing it")
             show()
             setOnCancelListener { deny(cancelReason) }
             currentDialog = this
         } else {
+            activity.log("activity is not ready to show dialog, denying permissions")
             deny(cancelReason)
         }
     }

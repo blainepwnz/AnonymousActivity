@@ -39,11 +39,11 @@ class ActivityContext {
         onResume = init
     }
 
-    fun onStop(init: AnonymousActivity.() -> Unit) {
-        onStop = init
+    fun onPause(init: AnonymousActivity.() -> Unit) {
+        onPause = init
     }
 
-    fun onPause(init: AnonymousActivity.() -> Unit) {
+    fun onStop(init: AnonymousActivity.() -> Unit) {
         onStop = init
     }
 

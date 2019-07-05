@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply from: '../deps.gradle'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion versions.compileSdkVersion
@@ -37,6 +38,7 @@ android {
 dependencies {
     implementation versions.kotlinStd
     implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     androidTestImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:core:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'

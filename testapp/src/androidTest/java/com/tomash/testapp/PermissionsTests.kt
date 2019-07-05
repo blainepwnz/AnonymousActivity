@@ -3,12 +3,15 @@ package com.tomash.testapp
 import android.Manifest
 import android.app.Activity
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import codes.titanium.anonymousactivity.AnonymousActivityLogger
 import codes.titanium.anonymousactivity.permissions.*
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
@@ -19,6 +22,11 @@ import java.util.concurrent.TimeUnit
 class PermissionsTests {
 
     var cachedActivity: Activity? = null
+
+    @Before
+    fun setUp() {
+        AnonymousActivityLogger.setLogger { Log.d("PermissionsTests", it) }
+    }
 
     @Test
     fun allowPermissionsOnFirstTimeAllowingPermissions() {
@@ -254,7 +262,6 @@ class PermissionsTests {
 
     private fun UiDevice.clickOnLocation(afterClick: () -> Unit) =
         wait(Until.findObject(By.text("Location")), maxAwaitDelay)?.click().also { afterClick() }
-
 
     private fun CountDownLatch.checkDenyReasonAndCountDown(expected: DenyReason, actual: DenyReason) =
         assertThat(expected == actual).isTrue().apply { countDown() }
